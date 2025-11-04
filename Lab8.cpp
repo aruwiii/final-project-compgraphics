@@ -1,19 +1,22 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <iostream>
-#include <string>
 #include <thread>
+#include <string>
+#include <sstream>
+#include <iomanip>
+
 using namespace std;
 
 void cloudTraverse(int value);
 void sunTraverse(int value);
-//void changeBackground(int value);
+void changeBackground();
 
 float xCloudCoordMove = 0.0;
-float xSunCoord = -1.0f;
+float xSunCoord = -0.7f;
 float ySunCoord= 0.6f;
-float r = 0.53f, g = 0.81f, b = 0.92f;
-bool evening = false;
+float r = 0.525f, g = 0.808f, b = 0.922f;
+int cycle = 0;
 
 void displayCloud() {
     glColor3ub(192, 192, 192);
@@ -91,10 +94,17 @@ void drawFloor() {
 
 }
 
-void displaySun() {
+void displayCircle() {
     glPushMatrix();
-    glTranslatef(xSunCoord, ySunCoord, 0.0f); 
-	glColor3ub(253, 184, 19); 
+    glTranslatef(xSunCoord, ySunCoord, 0.0f);
+
+    if (cycle % 2 == 0) {
+        glColor3ub(253, 184, 19); 
+    }
+    else {
+        glColor3ub(255, 255, 255); 
+    }
+
     glutSolidSphere(0.1, 20, 20);
     glPopMatrix();
 }
@@ -302,9 +312,11 @@ void drawFences() {
 
 void display() {
 
+    glClearColor(r, g, b, 0.0f);
+
     glClear(GL_COLOR_BUFFER_BIT);
 
-    displaySun();
+    displayCircle();
     drawGrass();
     drawFences();
     displayCloud();
@@ -322,10 +334,9 @@ int main(int argc, char** argv) {
     glutInitWindowSize(700, 700);
     glutCreateWindow("Final Project");
 
-    glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
+    glClearColor(r ,g, b, 0.0);
     glutTimerFunc(30, sunTraverse, 0);
     glutTimerFunc(1000, cloudTraverse, 0);
-    //glutTimerFunc(30, changeBackground, 0);
 
     glutDisplayFunc(display);
     GLenum err = glewInit();
@@ -336,25 +347,25 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-//void changeBackground(int value) {
-//    if (!evening) {
-//        r += 0.001f;
-//        g -= 0.001f;
-//        b -= 0.0005f;
-//        if (r >= 1.0f) evening = true;  // reached sunset
-//    }
-//    else {
-//        r -= 0.001f;
-//        g += 0.001f;
-//        b += 0.0005f;
-//        if (r <= 0.0f) evening = false; // back to morning
-//    }
-//
-//    glClearColor(r, g, b, 1.0f);
-//    glutPostRedisplay();
-//    glutTimerFunc(30, changeBackground, 0); // smooth transition
-//}
 
+void changeBackground() {
+    if (cycle % 2 == 0) {
+        if (xSunCoord >= 0.8f && xSunCoord <= 1.0f) {
+            r = 1.0f; g = 0.647f; b = 0.0f;
+        }
+        else {
+            r = 0.529f; g = 0.808f; b = 0.922f;
+        }
+    }
+    else {
+        if (xSunCoord >= 0.8f && xSunCoord <= 1.0f) {
+            r = 0.25f; g = 0.25f; b = 0.5f;
+        }
+        else {
+            r = 0.0f; g = 0.0f; b = 0.2f;
+        }
+    }
+}
 
 void sunTraverse(int value) {
    
@@ -364,12 +375,13 @@ void sunTraverse(int value) {
 
     if (xSunCoord > 1.0f) { 
         xSunCoord = -1.0f;
+        cycle++;
     }
 
+    changeBackground(); 
     glutPostRedisplay();
     glutTimerFunc(30, sunTraverse, 0); 
 }
-
 
 void cloudTraverse(int value) {
     xCloudCoordMove += 0.002f;
